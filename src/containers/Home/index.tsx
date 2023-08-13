@@ -160,13 +160,10 @@ function Home() {
         (window as WindowChain).ethereum
       );
       const signer = provider.getSigner();
-      console.log({ signer });
       const abiCoder = new ethers.utils.AbiCoder();
       let iface = new ethers.utils.Interface(abiData.abi);
       const contractCalldata = iface.encodeFunctionData(crossChainData.functionName, [crossChainData.functionParameters]);
-      console.log({ contractCalldata, crossChainData });
       const bridge = config.bridges.find((bridge: { id: string; }) => bridge.id.toString() === selectedBridge.toString());
-      console.log({ bridge, selectedBridge });
       let bridgeSelector = 0; // Layerzero
       let bridgeParams;
       if (bridge) {
@@ -177,7 +174,7 @@ function Home() {
             [
               account, //source chain refund address
               "0x10855704d1Dde09d90C0D1afEe4E1e6626e45Bb7", //destination chain refund address
-              ethers.utils.parseEther("6"), //relayer fees to be used on destination chain
+              ethers.utils.parseEther("0.1"), //relayer fees to be used on destination chain
               ethers.utils.solidityPack(["uint16", "uint256"], [1, 600000]), //gas limit for tx on destination chain
             ]
           );
@@ -187,7 +184,7 @@ function Home() {
             [
               account,
               "0x10855704d1Dde09d90C0D1afEe4E1e6626e45Bb7",
-              ethers.utils.parseEther("2"),
+              ethers.utils.parseEther("6"),
               "600000",
             ]
           );
