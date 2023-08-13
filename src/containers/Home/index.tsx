@@ -5,6 +5,8 @@ import React from 'react';
 import styled from 'styled-components';
 import Container from '@mui/material/Container';
 import InfoIcon from '@mui/icons-material/Info';
+// import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+// import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Tooltip from '@mui/material/Tooltip';
 import { useWeb3React } from "@web3-react/core";
 import Button from '@mui/material/Button';
@@ -24,6 +26,7 @@ import blockchain from '../../data/images/blockchain.gif';
 import config from '../../data/config';
 import { wrapperContracts } from '../../data/contracts';
 import wrapperAbi from '../../data/abi/wrapperContract.json';
+// import diamondContractAbi from '../../data/abi/diamondContract.json';
 
 import '../../App.css';
 
@@ -55,6 +58,8 @@ const IconConatiner = styled.div`
 function Home() {
   const { account, chainId } = useWeb3React();
   const [sourceChain, setSourceChain] = React.useState('420');
+  // const [transactionLogs, setTransactionLogs] = React.useState(null);
+  // const [trxDoneWithOutAck, setTrxDoneWithOutAck] = React.useState(false);
   const [pendingTx, setPendingTx] = React.useState(false);
   const [destinationChain, setDestinationChain] = React.useState('80001');
   const [selectedBridge, setSelectedBridge] = React.useState('layerzero');
@@ -161,6 +166,7 @@ function Home() {
       const contractCalldata = iface.encodeFunctionData(crossChainData.functionName, [crossChainData.functionParameters]);
       console.log({ contractCalldata, crossChainData });
       const bridge = config.bridges.find((bridge: { id: string; }) => bridge.id.toString() === selectedBridge.toString());
+      console.log({ bridge, selectedBridge });
       let bridgeSelector = 0; // Layerzero
       let bridgeParams;
       if (bridge) {
@@ -173,6 +179,16 @@ function Home() {
               "0x10855704d1Dde09d90C0D1afEe4E1e6626e45Bb7", //destination chain refund address
               ethers.utils.parseEther("6"), //relayer fees to be used on destination chain
               ethers.utils.solidityPack(["uint16", "uint256"], [1, 600000]), //gas limit for tx on destination chain
+            ]
+          );
+        } else if (bridge.value === 1) {
+          bridgeParams = abiCoder.encode(
+            ["address", "address", "uint256", "uint256"],
+            [
+              account,
+              "0x10855704d1Dde09d90C0D1afEe4E1e6626e45Bb7",
+              ethers.utils.parseEther("2"),
+              "600000",
             ]
           );
         }
@@ -192,6 +208,7 @@ function Home() {
           callbackAddress, //callback address calculated above
         ]
       );
+      console.log({ bridgeSelector })
       const tx = await wrapperContract.doCCTrx(
         bridgeSelector,
         sourceChain,
@@ -202,6 +219,7 @@ function Home() {
           value: '100000000000000000'
         }
       );
+      // listenToEvents()
       await tx.wait();
       console.log({ tx });
       setPendingTx(false)
@@ -214,6 +232,43 @@ function Home() {
   if ((sourceChain.toString() === '84531' || destinationChain.toString() === '84531')) {
     brideges = config.bridges.filter((bridge: { id: string; }) => bridge.id === 'layerzero')
   }
+  // const manageLogs = async (event, chainId, address, id) => {
+  //   if (chainId.toString() === sourceChain.toString() && event === 'CrossChainCalled') {
+  //     setTransactionLogs(id)
+  //   }
+  //   if (acknoledgement === 'withacknoledgement' && chainId.toString() === destinationChain.toString() && event === 'CrossChainReceived' && id === transactionLogs) {
+  //     setTrxDoneWithOutAck(true)
+  //   }
+  // }
+  // const listenToEvents = async () => {
+  //   const providerMumbai = new ethers.providers.JsonRpcProvider(
+  //     config.destinationChains[2].rpcUrl
+  //   );
+  //   const providerBase = new ethers.providers.JsonRpcProvider(
+  //     config.destinationChains[0].rpcUrl
+  //   );
+  //   const providerOptism = new ethers.providers.JsonRpcProvider(
+  //     config.destinationChains[1].rpcUrl
+  //   );
+  //   const diamondContractMumbai = new ethers.Contract(diamondContracts[80001], diamondContractAbi, providerMumbai);
+  //   const diamondContractBase = new ethers.Contract(diamondContracts[84531], diamondContractAbi, providerBase);
+  //   const diamondContractOptism = new ethers.Contract(diamondContracts[420], diamondContractAbi, providerOptism);
+  //   let eventFilterMumbai = diamondContractMumbai.filters.CrossChainCalled()
+  //   await diamondContractMumbai.queryFilter(eventFilterMumbai)
+  //   diamondContractMumbai.on("CrossChainCalled", (address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) => { manageLogs('CrossChainCalled', 80001, address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) });
+  //   diamondContractMumbai.on("CrossChainReceived", (address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) => { manageLogs('CrossChainReceived', 80001, address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) });
+  //   let eventFilterBase = diamondContractBase.filters.CrossChainCalled()
+  //   await diamondContractBase.queryFilter(eventFilterBase)
+  //   diamondContractBase.on("CrossChainCalled", (address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) => { manageLogs('CrossChainCalled', 84531, address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) });
+  //   diamondContractBase.on("CrossChainReceived", (address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) => { manageLogs('CrossChainReceived', 84531, address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) });
+  //   let eventFilterOptism = diamondContractOptism.filters.CrossChainCalled()
+  //   await diamondContractOptism.queryFilter(eventFilterOptism)
+  //   diamondContractOptism.on("CrossChainCalled", (address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) => { manageLogs('CrossChainCalled', 420, address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) });
+  //   diamondContractOptism.on("CrossChainReceived", (address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment) => {
+  //     manageLogs('CrossChainCalled', 420, address, id, bridgeName, souceDomain, modifiedPayload, updatedAcknowledgment)
+  //   });
+  // };
+
   return (
     <Container maxWidth="lg" sx={{ marginTop: '30px', marginBottom: '30px' }}>
       <Grid container spacing={4}>
@@ -231,7 +286,7 @@ function Home() {
           </Stack>
         </Grid>
         <Grid container spacing={4}>
-          <Grid item xs={12} sm={12} md={6} lg={6}>
+          <Grid item xs={12} sm={12} md={12} lg={12}>
             <FormConatiners>
               <TitleText style={{ color: '#2D4356', fontSize: '25px', textAlign: 'center' }}>
                 Enter the Details
@@ -444,13 +499,32 @@ function Home() {
               </Stack>
             </FormConatiners>
           </Grid>
-          <Grid item xs={12} sm={12} md={6} lg={6}>
+           {/* <Grid item xs={12} sm={12} md={6} lg={6}>
             <FormConatiners>
               <TitleText style={{ color: '#2D4356', fontSize: '25px', textAlign: 'center' }}>
                 Cross Chain Transcation Logs
               </TitleText>
+              {transactionLogs &&
+                <Stack spacing={2}>
+                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}>
+                    <CheckCircleIcon />
+                    <SubTitleText style={{ margin: '0px', fontWeight: '600', fontSize: '16px' }}>
+                      Transcation Successfull on Source Chain
+                    </SubTitleText>
+                  </Stack>
+                  <ArrowDownwardIcon />
+                </Stack>
+              }
+              {trxDoneWithOutAck &&
+                <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}>
+                  <CheckCircleIcon />
+                  <SubTitleText style={{ margin: '0px', fontWeight: '600', fontSize: '16px' }}>
+                    Transcation Successfull on Destination Chain
+                  </SubTitleText>
+                </Stack>
+              }
             </FormConatiners>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Grid>
     </Container>

@@ -55,13 +55,13 @@ const config = {
       name: "Hyperlane",
       id: "hyperlane",
       image: hyperlane,
-      value: 0,
+      value: 1,
     },
     {
       name: "Chainlink",
       id: "chainlink",
       image: chainLink,
-      value: 1,
+      value: 2,
     },
   ],
 };

@@ -1,0 +1,198 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_layerZeroHelper",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "NotEnoughValueForGas",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "caller",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "bridgeUsed",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "destinationLayerZeroChainId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "acknowledgment",
+                "type": "bytes"
+            }
+        ],
+        "name": "CrossChainCalled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "caller",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "bridgeUsed",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "sourceLayerZeroChainId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "acknowledgment",
+                "type": "bytes"
+            }
+        ],
+        "name": "CrossChainReceived",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "BRIDGE_NAME",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "layerZeroHelper",
+        "outputs": [
+            {
+                "internalType": "contract ILayerZeroHelper",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_sourceLayerZeroChainId",
+                "type": "uint16"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_sourceAddress",
+                "type": "bytes"
+            },
+            {
+                "internalType": "uint64",
+                "name": "_nonce",
+                "type": "uint64"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_payload",
+                "type": "bytes"
+            }
+        ],
+        "name": "layerZeroReceive",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "removeNativeToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_destinationLayerZeroChainId",
+                "type": "uint16"
+            },
+            {
+                "internalType": "address",
+                "name": "_destinationAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_payload",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_bridgeParams",
+                "type": "bytes"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_srcChainID",
+                "type": "uint256"
+            }
+        ],
+        "name": "useLayerZero",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    }
+]
