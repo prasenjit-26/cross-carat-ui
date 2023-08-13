@@ -1,18 +1,32 @@
 import React from "react";
-import { connect } from "@wagmi/core";
+import styled from "styled-components";
 import AppBar from "@mui/material/AppBar";
-import { InjectedConnector } from "wagmi/connectors/injected";
+import { useWeb3React } from "@web3-react/core";
 import Container from "@mui/material/Container";
 import { Button, Stack } from "@mui/material";
 import logo from "../../data/images/logoHorizontal.png";
+import { injected } from "../../utils/injected";
+import useEagerConnect from "../../hooks/useEagerConnect";
 
+const AccountDiv = styled.div`
+  background: #2d4356;
+  padding: 10px 20px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+`;
 export default function Header() {
+  const { account, activate } = useWeb3React();
   const handleConect = async () => {
-    const result = await connect({
-      connector: new InjectedConnector(),
-    });
-    console.log(result);
+    console.log("connecting");
+    try {
+      await activate(injected);
+    } catch (error) {
+      console.log("Error in connect: ", error);
+    }
   };
+  useEagerConnect();
   return (
     <AppBar position="static">
       <Container>
@@ -23,20 +37,26 @@ export default function Header() {
           alignItems="center"
         >
           <img src={logo} alt="crosscarat" width="200px" />
-          <Button
-            sx={{
-              textAlign: "center",
-              borderRadius: "15px",
-              fontWeight: "600",
-              fontSize: "18px",
-              maxHeight: "50px",
-            }}
-            variant="contained"
-            color="secondary"
-            onClick={() => handleConect()}
-          >
-            Connect Wallet
-          </Button>
+          {account ? (
+            <AccountDiv>
+              {account.slice(0, 6)}...{account.slice(-4)}
+            </AccountDiv>
+          ) : (
+            <Button
+              sx={{
+                textAlign: "center",
+                borderRadius: "15px",
+                fontWeight: "600",
+                fontSize: "18px",
+                maxHeight: "50px",
+              }}
+              variant="contained"
+              color="secondary"
+              onClick={handleConect}
+            >
+              Connect Wallet
+            </Button>
+          )}
         </Stack>
       </Container>
     </AppBar>

@@ -1,11 +1,9 @@
 // @ts-nocheck
 import React from 'react';
-// import Lottie from 'react-lottie';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-// import { createConfig, configureChains } from '@wagmi/core'
-// import { WagmiConfig } from 'wagmi'
-// import { baseGoerli, optimismGoerli, polygonMumbai } from '@wagmi/core/chains'
-// import { publicProvider } from '@wagmi/core/providers/public'
+import { Web3ReactProvider } from '@web3-react/core'
+import { Web3Provider } from "@ethersproject/providers";
+// import { InjectedConnector } from "@web3-react/injected-connector";
 import Header from './components/Header';
 import Home from './containers/Home';
 import './App.css';
@@ -25,6 +23,9 @@ function App() {
   //   publicClient,
   //   webSocketPublicClient,
   // })
+  function getLibrary(provider) {
+    return new Web3Provider(provider);
+  }
   const theme = createTheme({
     palette: {
       primary: {
@@ -35,12 +36,17 @@ function App() {
       },
     },
   });
+  // const Injected = new InjectedConnector({
+  //   supportedChainIds: [84531, 420, 80001]
+  // })
   return (
     // <WagmiConfig config={config}>
+    <Web3ReactProvider getLibrary={getLibrary}>
       <ThemeProvider theme={theme}>
         <Header />
         <Home />
       </ThemeProvider>
+    </Web3ReactProvider>
     // </WagmiConfig>
   );
 }
