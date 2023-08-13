@@ -1,0 +1,240 @@
+[
+  {
+    "inputs": [],
+    "name": "NotEnoughValueForGas",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainIDToCCIPChainSelector",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainIDToDiamondContract",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainIDToHyperlaneDomainID",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chainIDToLayerZeroChainID",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_bridgeSelector",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_srcChainID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_destChainID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_payload",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_bridgeParams",
+        "type": "bytes"
+      }
+    ],
+    "name": "doCCTrx",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_chainIDs",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint64[]",
+        "name": "_ccipChainSelectors",
+        "type": "uint64[]"
+      }
+    ],
+    "name": "upsertChainIDToCCIPChainSelector",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_chainIDs",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_diamondContractAddresses",
+        "type": "address[]"
+      }
+    ],
+    "name": "upsertChainIDToDiamondContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_chainIDs",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint32[]",
+        "name": "_hyperlaneDomainIDs",
+        "type": "uint32[]"
+      }
+    ],
+    "name": "upsertChainIDToHyperlaneDomainID",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_chainIDs",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint16[]",
+        "name": "_layerZeroChainIDs",
+        "type": "uint16[]"
+      }
+    ],
+    "name": "upsertChainIDToLayerZeroChainID",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

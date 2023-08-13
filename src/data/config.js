@@ -12,12 +12,16 @@ const config = {
       image: baseLogo,
       chainId: 84531,
       rpcUrl: "https://goerli.base.org",
+      blockExplorer: "https://goerli.basescan.org",
+      currency: "ETH",
     },
     {
       name: "Optimism",
       image: optimismLogo,
       chainId: 420,
       rpcUrl: "https://goerli.optimism.io",
+      blockExplorer: "https://goerli-optimism.etherscan.io",
+      currency: "ETH",
     },
   ],
   destinationChains: [
@@ -45,16 +49,19 @@ const config = {
       name: "LayerZero",
       id: "layerzero",
       image: layerzero,
+      value: 0,
     },
     {
       name: "Hyperlane",
       id: "hyperlane",
       image: hyperlane,
+      value: 0,
     },
     {
       name: "Chainlink",
       id: "chainlink",
       image: chainLink,
+      value: 1,
     },
   ],
 };

@@ -1,9 +1,12 @@
+// @ts-nocheck
+
 import React from 'react';
 // import Lottie from 'react-lottie';
 import styled from 'styled-components';
 import Container from '@mui/material/Container';
 import InfoIcon from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
+import { useWeb3React } from "@web3-react/core";
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Radio from '@mui/material/Radio';
@@ -16,8 +19,11 @@ import MenuItem from '@mui/material/MenuItem';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import { ethers } from 'ethers';
 import blockchain from '../../data/images/blockchain.gif';
 import config from '../../data/config';
+import { wrapperContracts } from '../../data/contracts';
+import wrapperAbi from '../../data/abi/wrapperContract.json';
 
 import '../../App.css';
 
@@ -36,7 +42,6 @@ const FormConatiners = styled.div`
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   border-radius: 20px;
   padding: 20px;
-  width: 100%;
 `
 const IconConatiner = styled.div`
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
@@ -48,24 +53,163 @@ const IconConatiner = styled.div`
   align-items: center;
 `
 function Home() {
-  // const defaultOptions = {
-  //   loop: true,
-  //   autoplay: true,
-  //   animationData: "https://lottie.host/?file=84d418cb-699d-40fb-9825-fd2259783116/tSuZY5yz2E.json",
-  // };
+  const { account, chainId } = useWeb3React();
   const [sourceChain, setSourceChain] = React.useState('420');
+  const [pendingTx, setPendingTx] = React.useState(false);
   const [destinationChain, setDestinationChain] = React.useState('80001');
-  const [acknoledgement, setAcknoledgement] = React.useState('Withacknoledgement');
-
+  const [selectedBridge, setSelectedBridge] = React.useState('layerzero');
+  const [acknoledgement, setAcknoledgement] = React.useState('withacknoledgement');
+  const [abiData, setAbiData] = React.useState(null);
+  const [crossChainData, setCrossChainData] = React.useState(
+    {
+      destinationContract: null,
+      functionName: null,
+      functionParameters: null,
+      callBackAddress: null,
+      crossChainData: null,
+    }
+  );
   const handleAcknoledgementChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAcknoledgement((event.target as HTMLInputElement).value);
   };
-  const handleSourceChainhange = (event: { target: { value: string } }) => {
+  const handleSourceChainhange = async (event: { target: { value: string } }) => {
     setSourceChain(event.target.value);
+    if (chainId?.toString() !== event.target.value) {
+      const network = config.souceChains.find((chain: { chainId: string | number | readonly string[] | undefined; }) => chain.chainId?.toString() === event.target.value.toString());
+      console.log({ network }, event.target.value);
+      if (network) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            // params: [{ chainId: '0x1' }],
+            params: [
+              { chainId: `0x${parseFloat(network.chainId).toString(16)}` },
+            ],
+          });
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (switchError) {
+            try {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: `0x${parseFloat(network.chainId).toString(16)}`,
+                    rpcUrls: [network.rpcUrl],
+                    chainName: network.name,
+                    nativeCurrency: {
+                      name: 'ETH',
+                      symbol: 'ETH',
+                      decimals: 18,
+                    },
+                  },
+                ],
+              });
+            } catch (addError) {
+              // handle "add" error
+              console.error({ addError });
+            }
+          }
+          // handle other "switch" errors
+        }
+      }
+    }
   };
   const handleDestinationChainhange = (event: { target: { value: string } }) => {
     setDestinationChain(event.target.value);
   };
+  const handleBridgeChange = (event: { target: { value: string } }) => {
+    setSelectedBridge(event.target.value);
+  };
+  const handleFile = (event) => {
+    console.log('file', event.target.files[0]);
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsedData = JSON.parse(e.target.result);
+          console.log({ parsedData })
+          setAbiData({
+            abi: parsedData,
+            name: file.name
+          })
+        } catch (error) {
+          console.log('Error parsing JSON:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  }
+  const handleTextChange = (event, title) => {
+    setCrossChainData(data => ({
+      ...data,
+      [title]: event.target.value
+    }))
+  }
+  const doCrossChainTx = async () => {
+    try {
+      setPendingTx(true)
+      const provider = new ethers.providers.Web3Provider(
+        // @ts-ignore
+        (window as WindowChain).ethereum
+      );
+      const signer = provider.getSigner();
+      console.log({ signer });
+      const abiCoder = new ethers.utils.AbiCoder();
+      let iface = new ethers.utils.Interface(abiData.abi);
+      const contractCalldata = iface.encodeFunctionData(crossChainData.functionName, [crossChainData.functionParameters]);
+      console.log({ contractCalldata, crossChainData });
+      const bridge = config.bridges.find((bridge: { id: string; }) => bridge.id.toString() === selectedBridge.toString());
+      let bridgeSelector = 0; // Layerzero
+      let bridgeParams;
+      if (bridge) {
+        bridgeSelector = bridge.value;
+        if (bridge.value === 0) {
+          bridgeParams = abiCoder.encode(
+            ["address", "address", "uint256", "bytes"],
+            [
+              account, //source chain refund address
+              "0x10855704d1Dde09d90C0D1afEe4E1e6626e45Bb7", //destination chain refund address
+              ethers.utils.parseEther("6"), //relayer fees to be used on destination chain
+              ethers.utils.solidityPack(["uint16", "uint256"], [1, 600000]), //gas limit for tx on destination chain
+            ]
+          );
+        }
+      }
+      const wrapperContract = new ethers.Contract(wrapperContracts[chainId], wrapperAbi, signer);
+      const callbackAddress =
+        acknoledgement === 'withacknoledgement'
+          ? crossChainData.callBackAddress
+          : ethers.constants.AddressZero;
+      const acknowledgement = abiCoder.encode(["bool"], [acknoledgement === 'withacknoledgement' ? true : false,]);
+      const payload = abiCoder.encode(
+        ["bytes", "bytes", "address", "address"],
+        [
+          acknowledgement,
+          contractCalldata, //constructed from ABI and params
+          crossChainData.destinationContract, //destination chain contract address
+          callbackAddress, //callback address calculated above
+        ]
+      );
+      const tx = await wrapperContract.doCCTrx(
+        bridgeSelector,
+        sourceChain,
+        destinationChain,
+        payload,
+        bridgeParams,
+        {
+          value: '100000000000000000'
+        }
+      );
+      await tx.wait();
+      console.log({ tx });
+      setPendingTx(false)
+    } catch (e) {
+      console.log({ e })
+      setPendingTx(false)
+    }
+  }
   let brideges = config.bridges;
   if ((sourceChain.toString() === '84531' || destinationChain.toString() === '84531')) {
     brideges = config.bridges.filter((bridge: { id: string; }) => bridge.id === 'layerzero')
@@ -152,8 +296,8 @@ function Home() {
                 <Select
                   labelId="demo-customized-select-label"
                   id="demo-customized-select"
-                  value={destinationChain}
-                  onChange={handleDestinationChainhange}
+                  value={selectedBridge}
+                  onChange={handleBridgeChange}
                 // input={<BootstrapInput />}
                 >
                   {brideges.map((bridge: { id: string | number | readonly string[] | undefined; image: string | undefined; name: string }) => (
@@ -202,6 +346,8 @@ function Home() {
                   id="standard-search"
                   InputProps={{ sx: { borderRadius: '15px' } }}
                   type="search"
+                  value={crossChainData.destinationContract}
+                  onChange={(event) => handleTextChange(event, 'destinationContract')}
                   variant="outlined"
                   placeholder='0x0000000'
                 />
@@ -209,9 +355,29 @@ function Home() {
               <Stack spacing={2} sx={{ marginTop: '20px' }}>
                 <Stack spacing={1} alignItems="center" direction="row">
                   <SubTitleText style={{ margin: '0px', fontWeight: '600', fontSize: '16px' }}>
-                    Function call
+                    Function Name
                   </SubTitleText>
-                  <Tooltip title="The Function call with the passed parameter eg. Mint(500)">
+                  <Tooltip title="The Function name that needs to be called eg. Mint">
+                    <InfoIcon sx={{ fontSize: '17px', color: '#435B66' }} />
+                  </Tooltip>
+                </Stack>
+                <TextField
+                  fullWidth
+                  id="standard-search"
+                  type="search"
+                  value={crossChainData.functionName}
+                  onChange={(event) => handleTextChange(event, 'functionName')}
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: '15px' } }}
+                  placeholder='0x0000000'
+                />
+              </Stack>
+              <Stack spacing={2} sx={{ marginTop: '20px' }}>
+                <Stack spacing={1} alignItems="center" direction="row">
+                  <SubTitleText style={{ margin: '0px', fontWeight: '600', fontSize: '16px' }}>
+                    Function Parameters
+                  </SubTitleText>
+                  <Tooltip title="The parameters that needs to be passed 500">
                     <InfoIcon sx={{ fontSize: '17px', color: '#435B66' }} />
                   </Tooltip>
                 </Stack>
@@ -220,9 +386,32 @@ function Home() {
                   id="standard-search"
                   type="search"
                   variant="outlined"
+                  value={crossChainData.functionParameters}
+                  onChange={(event) => handleTextChange(event, 'functionParameters')}
                   InputProps={{ sx: { borderRadius: '15px' } }}
                   placeholder='0x0000000'
                 />
+              </Stack>
+              <Stack spacing={2} sx={{ marginTop: '20px' }}>
+                <SubTitleText style={{ margin: '0px', fontWeight: '600', fontSize: '16px' }}>
+                  Function ABI
+                </SubTitleText>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  onChange={handleFile}
+                  sx={{ borderRadius: '15px', fontWeight: '600', fontSize: '18px' }}
+                >
+                  Upload ABI File
+                  <input
+                    type="file"
+                    hidden
+                  />
+                </Button>
+                {abiData && (
+                  <SubTitleText style={{ margin: '0px', fontWeight: '600', fontSize: '12px' }}>
+                    ABi File : {abiData.name}
+                  </SubTitleText>)}
               </Stack>
               <Stack spacing={2} sx={{ marginTop: '20px' }}>
                 <Stack spacing={1} alignItems="center" direction="row">
@@ -237,6 +426,8 @@ function Home() {
                   fullWidth
                   id="standard-search"
                   type="search"
+                  value={crossChainData.callBackAddress}
+                  onChange={(event) => handleTextChange(event, 'callBackAddress')}
                   disabled={acknoledgement === 'withoutacknoledgement'}
                   variant="outlined"
                   InputProps={{ sx: { borderRadius: '15px' } }}
@@ -244,8 +435,20 @@ function Home() {
                 />
               </Stack>
               <Stack justifyContent="center">
-                <Button variant="contained" sx={{ marginTop: '20px', textAlign: 'center', borderRadius: '15px', fontWeight: '600', fontSize: '18px' }}>Process Transcation</Button>
+                <Button
+                  onClick={doCrossChainTx}
+                  disabled={pendingTx}
+                  variant="contained" sx={{ marginTop: '20px', textAlign: 'center', borderRadius: '15px', fontWeight: '600', fontSize: '18px' }}>
+                  {pendingTx ? 'Processing...' : 'Process Transcation'}
+                </Button>
               </Stack>
+            </FormConatiners>
+          </Grid>
+          <Grid item xs={12} sm={12} md={6} lg={6}>
+            <FormConatiners>
+              <TitleText style={{ color: '#2D4356', fontSize: '25px', textAlign: 'center' }}>
+                Cross Chain Transcation Logs
+              </TitleText>
             </FormConatiners>
           </Grid>
         </Grid>

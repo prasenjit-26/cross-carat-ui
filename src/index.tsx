@@ -4,6 +4,10 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+declare const window: any;
+if ("ethereum" in window) {
+  (window && (window.ethereum as any)).autoRefreshOnNetworkChange = false;
+}
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
